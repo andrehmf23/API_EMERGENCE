@@ -27,9 +27,15 @@ class OpenWeatherMapController extends Controller
             $urlNominatim = "https://nominatim.openstreetmap.org/search?format=json&q={$name}";
 
             //Api Nominatim exige user-agent no cabeçalho da requisição
-            $response = Http::withHeaders([
+            // $response = Http::withHeaders([
+            //     'User-Agent' => 'YourAppName/1.0 (https://yourwebsite.com)'
+            // ])->get($urlNominatim);
+            $response = Http::withOptions([
+                'verify' => false, // 🔒 desativa a verificação SSL (somente em ambiente local)
+            ])->withHeaders([
                 'User-Agent' => 'YourAppName/1.0 (https://yourwebsite.com)'
             ])->get($urlNominatim);
+
 
             if ($response->failed()) {
                 return response()->json(['error' => 'Erro ao obter coordenadas da cidade'], $response->status());
@@ -92,7 +98,9 @@ class OpenWeatherMapController extends Controller
 
             // Se não houver dados, busque novos dados do clima e faz o insert a tabela
             $url = "https://api.openweathermap.org/data/2.5/weather?lat={$latitude}&lon={$longitude}&appid={$appid}&units=metric";
-            $response = Http::get($url);
+            $response = Http::withOptions([
+                'verify' => false,
+            ])->get($url);
 
             if ($response->failed()) {
                 return response()->json(['error' => 'Erro ao obter dados do clima'], $response->status());
